@@ -17,13 +17,14 @@ matriz = [
     [[0, 0 ,0], [0 ,0 ,0], [0, 0, 1]]
 ]
 
-
 input_text = ""
 PORT = 1234
 HOST = input_text
 exibir = 0
 player = 1
 cor_player = 1  
+
+
 
 def iluminacao():
     glEnable(GL_DEPTH_TEST)
@@ -268,54 +269,71 @@ def checar_zeros():
                 if matriz[i][j][k] == 0:
                     return True
     return False
-
 def checar_vitoria():
     count_1 = 0
     count_2 = 0
 
-    # Verificar arestas nas linhas
+    # Verificar arestas nas linhas, colunas e profundidades
     for i in range(3):
         for j in range(3):
+            # Verificar arestas nas linhas
             if matriz[i][j][0] == matriz[i][j][1] == matriz[i][j][2]:
                 if matriz[i][j][0] == 1:
                     count_1 += 1
                 elif matriz[i][j][0] == 2:
                     count_2 += 1
 
-    # Verificar arestas nas colunas
-    for i in range(3):
-        for j in range(3):
+            # Verificar arestas nas colunas
             if matriz[j][i][0] == matriz[j][i][1] == matriz[j][i][2]:
                 if matriz[j][i][0] == 1:
                     count_1 += 1
                 elif matriz[j][i][0] == 2:
                     count_2 += 1
 
-    # Verificar arestas nas profundidades
-    for i in range(3):
-        if matriz[0][0][i] == matriz[1][1][i] == matriz[2][2][i]:
-            if matriz[0][0][i] == 1:
-                count_1 += 1
-            elif matriz[0][0][i] == 2:
-                count_2 += 1
-
-        if matriz[2][0][i] == matriz[1][1][i] == matriz[0][2][i]:
-            if matriz[2][0][i] == 1:
-                count_1 += 1
-            elif matriz[2][0][i] == 2:
-                count_2 += 1
+            # Verificar arestas nas profundidades
+            if matriz[0][j][i] == matriz[1][j][i] == matriz[2][j][i]:
+                if matriz[0][j][i] == 1:
+                    count_1 += 1
+                elif matriz[0][j][i] == 2:
+                    count_2 += 1
 
     # Verificar arestas nas diagonais
+    for i in range(3):
+        if matriz[0][i][0] == matriz[1][i][1] == matriz[2][i][2]:
+            if matriz[0][i][0] == 1:
+                count_1 += 1
+            elif matriz[0][i][0] == 2:
+                count_2 += 1
+
+        if matriz[2][i][0] == matriz[1][i][1] == matriz[0][i][2]:
+            if matriz[2][i][0] == 1:
+                count_1 += 1
+            elif matriz[2][i][0] == 2:
+                count_2 += 1
+
+    # Verificar arestas nas diagonais das profundidades
     if matriz[0][0][0] == matriz[1][1][1] == matriz[2][2][2]:
         if matriz[0][0][0] == 1:
             count_1 += 1
         elif matriz[0][0][0] == 2:
             count_2 += 1
 
+    if matriz[2][0][0] == matriz[1][1][1] == matriz[0][2][2]:
+        if matriz[2][0][0] == 1:
+            count_1 += 1
+        elif matriz[2][0][0] == 2:
+            count_2 += 1
+
     if matriz[0][2][0] == matriz[1][1][1] == matriz[2][0][2]:
         if matriz[0][2][0] == 1:
             count_1 += 1
         elif matriz[0][2][0] == 2:
+            count_2 += 1
+
+    if matriz[2][2][0] == matriz[1][1][1] == matriz[0][0][2]:
+        if matriz[2][2][0] == 1:
+            count_1 += 1
+        elif matriz[2][2][0] == 2:
             count_2 += 1
 
     # Determinar o número vencedor
@@ -327,7 +345,6 @@ def checar_vitoria():
         vencedor = None
 
     return vencedor, count_1, count_2
-
 
 def main():
     global input_text
@@ -347,6 +364,7 @@ def main():
     background_color = (0.5, 0.5, 0.5)
     abrir_servidor = True
 
+    checar_vencedor = 1
     
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
@@ -516,6 +534,8 @@ def main():
             iluminacao()
             desenhar_esferas(matriz)
             desligaIluminacao()
+            if checar_zeros() == False:
+                exibir = 5 
         
         elif exibir == 4: # Hospedar
             HOST = socket.gethostbyname(socket.gethostname())
@@ -531,14 +551,16 @@ def main():
                 exibir = 2
             
         elif exibir == 5: # Vitoria
-            vencedor, count_1, count_2 = checar_vitoria()
-            
+            if checar_vencedor == 1:
+                vencedor, count_1, count_2 = checar_vitoria()
+                checar_vencedor = 0            
             if (vencedor == player):
                 desenhar_texto("Você venceu!", (-1.5, 2, 0), (0,0,0),32)
             elif (vencedor == None):
                 desenhar_texto("Deu velha!", (-1.5, 2, 0), (0,0,0),32)
             else:
                 desenhar_texto("Você perdeu!", (-1.5, 2, 0), (0,0,0),32)
+
             if (vencedor != None):
                 desenhar_texto("O vencedor é o player " + str(vencedor), (-1.5, 1, 0), (0,0,0),32)
             desenhar_texto("Player 1 fez " + str(count_1)+" arestas", (-1.5, 0, 0), (0,0,0),32)
@@ -546,9 +568,9 @@ def main():
             
 
 
-            message = str(matriz)
-            client_socket.sendall(message.encode())
-            data = client_socket.recv(1024).decode()
+            # message = str(matriz)
+            # client_socket.sendall(message.encode())
+            # data = client_socket.recv(1024).decode()
 
 
         glClearColor(*background_color, 1.0) 
