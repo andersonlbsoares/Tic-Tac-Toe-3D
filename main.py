@@ -269,6 +269,7 @@ def checar_zeros():
                 if matriz[i][j][k] == 0:
                     return True
     return False
+
 def checar_vitoria():
     count_1 = 0
     count_2 = 0
@@ -567,11 +568,9 @@ def main():
             desenhar_texto("Player 2 fez " + str(count_2)+ " arestas", (-1.5, -1, 0), (0,0,0),32)
             
 
-
-            # message = str(matriz)
-            # client_socket.sendall(message.encode())
-            # data = client_socket.recv(1024).decode()
-
+            message = str(matriz)
+            client_socket.sendall(message.encode())
+            data = client_socket.recv(1024).decode()
 
         glClearColor(*background_color, 1.0) 
         glMatrixMode(GL_MODELVIEW)
